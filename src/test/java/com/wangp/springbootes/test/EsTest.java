@@ -2,6 +2,7 @@ package com.wangp.springbootes.test;
 
 import com.wangp.springbootes.SpringbootEsApplication;
 import com.wangp.springbootes.dao.ItemRepository;
+import com.wangp.springbootes.model.Article;
 import com.wangp.springbootes.model.Item;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.Aggregation;
