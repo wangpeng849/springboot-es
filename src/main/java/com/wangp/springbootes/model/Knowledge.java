@@ -16,14 +16,16 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Document(indexName = "mysql_index",shards = 1,replicas = 0,type = "knowledge")
+@Document(indexName = "knowledge_base_system",shards = 1,replicas = 0,type = "knowledge")
 public class Knowledge {
     @Id
     private Integer id;
     @Field(type = FieldType.Keyword)
-    private String workStation;
+    private String workstation;
     @Field(type = FieldType.Text,analyzer = "ik_max_word")
     private String question;
-
+    @Field(type=FieldType.Text,analyzer = "ik_max_word")
     private String describe;
+    @Field(type = FieldType.Keyword)
+    private String attachment;
 }

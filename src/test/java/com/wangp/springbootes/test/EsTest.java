@@ -2,8 +2,10 @@ package com.wangp.springbootes.test;
 
 import com.wangp.springbootes.SpringbootEsApplication;
 import com.wangp.springbootes.dao.ItemRepository;
+import com.wangp.springbootes.dao.KnowledgeRepository;
 import com.wangp.springbootes.model.Article;
 import com.wangp.springbootes.model.Item;
+import com.wangp.springbootes.model.Knowledge;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
@@ -19,6 +21,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.core.aggregation.AggregatedPage;
 import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
@@ -323,7 +326,76 @@ public class EsTest {
 //            // 3.7.获取子聚合结果：  ??????
 //            InternalAvg max = (InternalAvg) bucket.getAggregations().asMap().get("max_price");
 //            System.out.println("最高售价：" + avg.getValue());
+
+
+            /**
+             *  knowledge 测试
+             */
+
         }
 
     }
+
+
+    /**
+     *  knowledge Test
+     */
+
+    @Autowired
+    private KnowledgeRepository knowledgeRepository;
+
+    @Test
+    public void createKnowledgeIndex(){
+        elasticsearchTemplate.createIndex(Knowledge.class);
+    }
+
+    @Test
+    public void deleteKnowledgeIndex() {
+        elasticsearchTemplate.deleteIndex(Knowledge.class);
+    }
+
+    @Test
+    public void queryKnowledge() {
+        Iterable<Knowledge> items = knowledgeRepository.findAll(Sort.by("id").ascending());
+        items.forEach(item -> System.out.println("item = " + item));
+    }
+
+    /**
+     * 自定义查询
+     */
+    @Test
+    public void searchKnowledge() {
+        // 构建查询条件
+        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
+        // 添加基本分词查询
+        queryBuilder.withQuery(QueryBuilders.matchQuery("describe", "我要用传送"));
+        // 搜索，获取结果
+        Page<Knowledge> items = knowledgeRepository.search(queryBuilder.build());
+        // 总条数
+        long total = items.getTotalElements();
+        System.out.println("total = " + total);
+        items.forEach(item -> System.out.println("item = " + item));
+    }
+
+    @Test
+    public void searchKnowledgeByPage() {
+        // 构建查询条件
+        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
+        // 添加基本分词查询
+        queryBuilder.withQuery(QueryBuilders.matchQuery("describe", "黑色的机器"));
+//        queryBuilder.withQuery(QueryBuilders.queryStringQuery("机"));
+        // 分页：
+        int page = 0;
+        int size = 3;
+        queryBuilder.withPageable(PageRequest.of(page, size));
+        // 搜索，获取结果
+        Page<Knowledge> items = knowledgeRepository.search(queryBuilder.build());
+        long total = items.getTotalElements();
+        System.out.println("总条数 = " + total);
+        System.out.println("总页数 = " + items.getTotalPages());
+        System.out.println("当前页：" + items.getNumber());
+        System.out.println("每页大小：" + items.getSize());
+        items.forEach(item -> System.out.println("item = " + item));
+    }
+
 }
