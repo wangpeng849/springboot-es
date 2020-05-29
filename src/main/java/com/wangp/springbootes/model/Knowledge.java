@@ -20,12 +20,12 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 public class Knowledge {
     @Id
     private Integer id;
-    @Field(type = FieldType.Keyword)
-    private String workstation;
-    @Field(type = FieldType.Text,analyzer = "ik_max_word")
-    private String question;
-    @Field(type=FieldType.Text,analyzer = "ik_max_word")
-    private String describe;
-    @Field(type = FieldType.Keyword)
-    private String attachment;
+//    @Field(type = FieldType.Keyword)
+//    private String workstation;
+//    @Field(type = FieldType.Text,analyzer = "ik_max_word")
+//    private String question;
+//    @Field(type=FieldType.Text,analyzer = "ik_max_word")
+//    private String describe;
+//    @Field(type = FieldType.Keyword)
+//    private String attachment;
 }
