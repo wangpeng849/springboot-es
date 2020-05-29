@@ -3,12 +3,12 @@ package com.wangp.springbootes.test;
 import com.wangp.springbootes.SpringbootEsApplication;
 import com.wangp.springbootes.dao.ItemRepository;
 import com.wangp.springbootes.dao.KnowledgeRepository;
-import com.wangp.springbootes.model.Article;
 import com.wangp.springbootes.model.Item;
 import com.wangp.springbootes.model.Knowledge;
+import com.wangp.springbootes.util.HttpClientUtils;
+import net.minidev.json.JSONObject;
+import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.aggregations.Aggregation;
-import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
 import org.elasticsearch.search.aggregations.metrics.avg.InternalAvg;
@@ -17,7 +17,6 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,10 +25,15 @@ import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.core.aggregation.AggregatedPage;
 import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
+import org.springframework.data.elasticsearch.core.query.UpdateQueryBuilder;
 import org.springframework.test.context.junit4.SpringRunner;
+import sun.font.Script;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -347,6 +351,20 @@ public class EsTest {
     @Test
     public void createKnowledgeIndex(){
         elasticsearchTemplate.createIndex(Knowledge.class);
+    }
+
+    @Test
+    public void addField() throws IOException {
+        String url = "http://localhost:9200/knowledge_base_system/_mapping/knowledge";
+        Map<String,Map> map = new HashMap<>();
+        Map<String,Map> fieldName = new HashMap<>();
+        Map<String,String> type = new HashMap<>();
+
+        type.put("type","keyword");
+        fieldName.put("java",type);
+        map.put("properties",fieldName);
+        String body = HttpClientUtils.sendPostDataByJson(url, JSONObject.toJSONString(map),"utf-8");
+        System.out.println(body);
     }
 
     @Test
