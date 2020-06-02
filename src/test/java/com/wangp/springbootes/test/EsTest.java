@@ -1,14 +1,17 @@
 package com.wangp.springbootes.test;
 
+import com.alibaba.fastjson.JSONObject;
 import com.wangp.springbootes.SpringbootEsApplication;
 import com.wangp.springbootes.dao.ItemRepository;
 import com.wangp.springbootes.dao.KnowledgeRepository;
 import com.wangp.springbootes.model.Item;
 import com.wangp.springbootes.model.Knowledge;
 import com.wangp.springbootes.util.HttpClientUtils;
-import net.minidev.json.JSONObject;
-import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.index.query.*;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
 import org.elasticsearch.search.aggregations.metrics.avg.InternalAvg;
@@ -25,9 +28,7 @@ import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.core.aggregation.AggregatedPage;
 import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
-import org.springframework.data.elasticsearch.core.query.UpdateQueryBuilder;
 import org.springframework.test.context.junit4.SpringRunner;
-import sun.font.Script;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -400,7 +401,7 @@ public class EsTest {
         // 构建查询条件
         NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
         // 添加基本分词查询
-        queryBuilder.withQuery(QueryBuilders.matchQuery("describe", "黑色的机器"));
+        queryBuilder.withQuery(QueryBuilders.matchQuery("问题描述", "黑点的机器"));
 //        queryBuilder.withQuery(QueryBuilders.queryStringQuery("机"));
         // 分页：
         int page = 0;
@@ -416,4 +417,47 @@ public class EsTest {
         items.forEach(item -> System.out.println("item = " + item));
     }
 
+
+    @Autowired
+    private TransportClient client;
+
+    @Test
+    public void queryKnowledgeNoEntity() {
+        SearchResponse response = client.prepareSearch("knowledge_base_system").get();
+        SearchHits hits = response.getHits();
+        for (SearchHit hit : hits) {
+            System.out.println(hit);
+        }
+    }
+
+
+    @Test
+    public void queryBuilderTest(){
+        MatchQueryBuilder queryBuilder = QueryBuilders.matchQuery("问题描述", "你看到了一些黑点");
+        SearchResponse response = client.prepareSearch("knowledge_base_system").setQuery(queryBuilder).get();
+        for (SearchHit hit : response.getHits()) {
+            Map<String,Object> map = (Map<String, Object>) JSONObject.parse(hit.toString());
+            System.out.println(map.get("_source"));
+        }
+    }
+
+    @Test
+    public void multiQueryTest(){
+        MultiMatchQueryBuilder queryBuilder = QueryBuilders.multiMatchQuery("你看到了一些黑点和白板", "问题描述","问题详情");
+        SearchResponse response = client.prepareSearch("knowledge_base_system").setQuery(queryBuilder).get();
+        for (SearchHit hit : response.getHits()) {
+            Map<String,Object> map = (Map<String, Object>) JSONObject.parse(hit.toString());
+            System.out.println(map.get("_source"));
+        }
+    }
+
+    @Test
+    public void termQueryTest(){
+        TermsQueryBuilder queryBuilder = QueryBuilders.termsQuery("问题描述", "黑点","白板");
+        SearchResponse response = client.prepareSearch("knowledge_base_system").setQuery(queryBuilder).get();
+        for (SearchHit hit : response.getHits()) {
+            Map<String,Object> map = (Map<String, Object>) JSONObject.parse(hit.toString());
+            System.out.println(map.get("_source"));
+        }
+    }
 }
